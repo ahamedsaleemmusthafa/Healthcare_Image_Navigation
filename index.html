@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Healthcare Field Locator & Navigation Suite</title>
+    <style>
+        /* Base Reset & Layout Split Dashboard */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+
+        /* Main Header Banner Styles */
+        .top-banner {
+            background-color: #2c3e50;
+            color: #ffffff;
+            padding: 20px;
+            position: relative; /* Context for nested absolute positioning */
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .banner-title-container {
+            display: inline-block;
+            max-width: 60%;
+        }
+
+        #suite-title {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            display: block;
+        }
+
+        .banner-subtitle {
+            font-size: 13px;
+            font-weight: normal;
+            color: #bdc3c7;
+            margin-top: 5px;
+            display: block;
+            letter-spacing: 1px;
+        }
+
+        /* Relocated Application Switcher Container */
+        .app-switcher-bar {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 12px;
+        }
+
+        .switch-btn {
+            background: rgba(52, 73, 94, 0.6);
+            color: #bdc3c7;
+            border: 1px solid rgba(69, 90, 100, 0.7);
+            padding: 8px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .switch-btn:hover {
+            background: rgba(65, 91, 118, 0.8);
+            color: #fff;
+        }
+
+        .switch-btn.active-mode {
+            background: #3498db;
+            color: #ffffff;
+            border-color: #2980b9;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.4);
+        }
+
+        /* Main Workspace Container Frame - Strict 70% / 30% Split */
+        .container {
+            display: flex;
+            width: 100vw;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Form Container - Explicitly 70% of Screen Width */
+        .form-container {
+            position: relative;
+            flex: 0 0 70vw; 
+            width: 70vw;
+            height: 100%;
+            overflow: auto;
+            background-color: #eef2f5;
+            padding: 15px;
+            box-sizing: border-box;
+            border-right: 2px solid #cfd8dc;
+        }
+
+        /* Image Fluid Responsiveness Configuration */
+        #form-image {
+            display: block;
+            width: 100%;  
+            height: auto; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            background: #fff;
+	    margin-top: 0.5mm; /* <-- ADD THIS LINE to shift the image 2mm up */
+        }
+
+        /* Right Side Quiz Interface Panel - Explicitly 30% Width */
+        .dashboard-panel {
+            flex: 0 0 30vw;
+            width: 30vw;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .panel-content { padding: 25px; }
+
+        /* Screen Routing Engine */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Typography & Components */
+        h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 24px; 
+            border-bottom: 2px solid #eceff1;
+            padding-bottom: 12px;
+        }
+
+        h3 { font-size: 20px !important; }
+
+        .card {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card p { font-size: 16px; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-size: 16px; 
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 16px; 
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px; 
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #27ae60; }
+        .btn-retry { background: #3498db; }
+        .btn-retry:hover { background: #2980b9; }
+
+        #box-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        #box-list li {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+            color: #2c3e50;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 22px; 
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.1);
+        }
+
+        /* Countdown Progress Bar Component */
+        .timer-container {
+            width: 100%;
+            background: #e2e8f0;
+            height: 12px; 
+            border-radius: 6px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background: #2ecc71;
+            transition: width 0.1s linear, background-color 0.3s;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            background: #edf2f7;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px; 
+            font-weight: bold;
+        }
+        .stat-box span {
+            display: block;
+            font-size: 24px; 
+            color: #2b6cb0;
+            margin-top: 6px;
+        }
+
+        .bordered-list {
+            padding: 0;
+            list-style: none;
+        }
+        .bordered-list li {
+            border: 1px solid #cbd5e0;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 16px; 
+        }
+
+        area { outline: none; }
+        .fade-in { animation: fadeInEffect 0.4s ease-out; }
+        @keyframes fadeInEffect {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-banner">
+        <div class="banner-title-container">
+            <span id="suite-title">HCFA Field Locator & Navigation Suite</span>
+            <span class="banner-subtitle">Created by Saleem</span>
+        </div>
+        
+        <div class="app-switcher-bar">
+            <button id="mode-hcfa-btn" class="switch-btn active-mode">HCFA-1500</button>
+            <button id="mode-ub-btn" class="switch-btn">UB-04</button>
+        </div>
+    </div>
+
+    <div class="container" id="app-workspace">
+        <div class="form-container">
+            <img src="HCFA.jpg" usemap="#image-map" id="form-image" alt="Healthcare Claims Form Matrix">
+            <map name="image-map" id="dynamic-image-map">
+                </map>
+        </div>
+
+        <div class="dashboard-panel">
+            <div class="panel-content">
+                
+                <div id="setup-screen" class="screen active fade-in">
+                    <h2>📋 Challenge Settings</h2>
+                    <div class="card">
+                        <div class="form-group">
+                            <label for="input-questions">Number of Quiz:</label>
+                            <input type="number" id="input-questions" value="10" min="1" max="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-timer">Seconds Per Quiz:</label>
+                            <input type="number" id="input-timer" value="15" min="3" max="60">
+                        </div>
+                        <button id="start-game-btn" class="btn">Launch Simulator</button>
+                    </div>
+                </div>
+
+                <div id="game-screen" class="screen fade-in">
+                    <h2>🎯 Find This Field:</h2>
+                    <ul id="box-list"></ul>
+                    
+                    <div class="timer-container">
+                        <div id="timer-bar"></div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">Score <span id="score">0</span></div>
+                        <div class="stat-box">Remaining <span id="attempts">0</span></div>
+                        <div class="stat-box">Streak 🔥 <span id="streak" style="color: #e67e22;">0</span></div>
+                        <div class="stat-box">Time Left <span id="time-text">0s</span></div>
+                    </div>
+                </div>
+
+                <div id="results-screen" class="screen fade-in">
+                    <h2>📊 Performance Summary</h2>
+                    <div id="results-content"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        // --- Form Native Specification Profiles ---
+        const mapDataProfiles = {
+            hcfa: {
+                title: "HCFA Field Locator & Navigation Suite",
+                imageSrc: "HCFA.jpg",
+                nativeWidth: 1729,  
+                nativeHeight: 2230,
+                borderWidth: "3px",
+                maxFields: 60,
+                areas: [
+                    { alt: "Box 1 - Plan Type", coords: "66,266,1040,333" },
+                    { alt: "Box 1a - Insured's I.D. Number", coords: "1043,266,1644,334" },
+                    { alt: "Box 2 - Patient's Name", coords: "67,336,638,396" },
+                    { alt: "Box 3 - Patient's Birth Date, Gender", coords: "641,337,1041,395" },
+                    { alt: "Box 4 - Insured's Name", coords: "1042,337,1644,397" },
+                    { alt: "Box 5 - Patient's Address", coords: "65,397,640,601" },
+                    { alt: "Box 6 - Patient Relationship to Insured", coords: "643,399,1038,463" },
+                    { alt: "Box 7 - Insured's Address", coords: "1044,400,1643,600" },
+                    { alt: "Box 8 - Reserved for NUCC Use", coords: "640,469,1040,599" },
+                    { alt: "Box 9 - Other Insured's Name", coords: "66,604,636,667" },
+                    { alt: "Box 9a - Other Insured's Policy or Group Number", coords: "67,667,637,730" },
+                    { alt: "Box 9b - Reserved for NUCC Use", coords: "66,733,636,804" },
+                    { alt: "Box 9c - Reserved for NUCC Use", coords: "66,806,634,868" },
+                    { alt: "Box 9d - Insurance Plan Name or Program Name", coords: "65,873,635,935" },
+                    { alt: "Box 10a, 10b, & 10c - Is Patient's Condition", coords: "640,605,1037,866" },
+                    { alt: "Box 10d - Claim Codes", coords: "640,871,1040,938" },
+                    { alt: "Box 11 - Insured's Policy, Group, or FECA Number", coords: "1045,605,1645,666" },
+                    { alt: "Box 11a - Insured's Date of Birth, Gender", coords: "1043,671,1642,738" },
+                    { alt: "Box 11b - Other Claim ID", coords: "1045,740,1643,803" },
+                    { alt: "Box 11c - Insurance Plan Name or Program Name", coords: "1042,804,1643,870" },
+                    { alt: "Box 11d - Is there another Health Benefit Plan", coords: "1041,872,1643,937" },
+                    { alt: "Box 12 - Patient's or Authorized Person's Signature", coords: "64,941,1038,1069" },
+                    { alt: "Box 13 - Insured's or Authorized Person's Signature", coords: "1043,938,1642,1067" },
+                    { alt: "Box 14 - Qualifier", coords: "300,1077,600,1138" },
+                    { alt: "Box 14 - Date of Current Illness", coords: "67,1077,298,1138" },
+                    { alt: "Box 15 - Other Date", coords: "602,1075,1040,1138" },
+                    { alt: "Box 16 - Dates Patient Unable to Work in Current Occupation", coords: "1042,1074,1641,1134" },
+                    { alt: "Box 17 - Name of Referring Provider or Other Source", coords: "67,1140,595,1202" },
+                    { alt: "Box 17a - Other ID", coords: "601,1140,1037,1171" },
+                    { alt: "Box 17b - NPI", coords: "601,1171,1036,1205" },
+                    { alt: "Box 18 - Hospitalization Dates Related to Current Services", coords: "1041,1139,1641,1204" },
+                    { alt: "Box 19 - Additional Claim Information", coords: "67,1208,1038,1272" },
+                    { alt: "Box 20 - Outside Lab and Charges", coords: "1042,1208,1642,1273" },
+                    { alt: "Box 21 - Diagnosis or Nature of Illness or Injury", coords: "66,1314,1037,1405" },
+                    { alt: "Box 21- Indicator", coords: "812,1275,1034,1311" },
+                    { alt: "Box 22 - Resubmission Code and Original Ref. No.", coords: "1041,1277,1645,1340" },
+                    { alt: "Box 23 - Prior Authorization Number", coords: "1041,1342,1642,1411" },
+                    { alt: "Box 24a - Date of Service(From & TO)", coords: "67,1414,417,1880" },
+                    { alt: "Box 24b - Place of Service", coords: "416,1412,478,1882" },
+                    { alt: "Box 24c - EMG", coords: "482,1412,541,1882" },
+                    { alt: "Box 24d - CPT/HCPCS", coords: "542,1413,683,1879" },
+                    { alt: "Box 24d - Modifier", coords: "684,1412,937,1879" },
+                    { alt: "Box 24e - Diagnosis Code Pointer", coords: "938,1413,1037,1879" },
+                    { alt: "Box 24f - Charges", coords: "1041,1415,1215,1879" },
+                    { alt: "Box 24g - Days or units", coords: "1217,1414,1294,1879" },
+                    { alt: "Box 24h - EPSDT", coords: "1296,1414,1336,1880" },
+                    { alt: "Box 24i - ID & Qual", coords: "1337,1412,1396,1879" },
+                    { alt: "Box 24j - Rendering Provider Id & NPI", coords: "1398,1413,1642,1879" },
+                    { alt: "Box 25 - Federal Tax ID Number", coords: "65,1883,496,1950" },
+                    { alt: "Box 26 - Patient's Account No.", coords: "502,1886,787,1947" },
+                    { alt: "Box 27 - Accept Assignment", coords: "793,1886,1037,1948" },
+                    { alt: "Box 28 - Total Charge", coords: "1040,1883,1262,1948" },
+                    { alt: "Box 29 - Amount Paid", coords: "1264,1883,1452,1950" },
+                    { alt: "Box 30 - Reserved for NUCC Use", coords: "1456,1883,1643,1951" },
+                    { alt: "Box 31 - Signature of Physician or Supplier Including Degrees or Credentials", coords: "66,1951,497,2119" },
+                    { alt: "Box 32 - Service Facility Location Information", coords: "500,1951,1037,2080" },
+                    { alt: "Box 32a - NPI", coords: "500,2084,727,2121" },
+                    { alt: "Box 32b - Other ID", coords: "730,2083,1035,2118" },
+                    { alt: "Box 33 - Billing Provider Info & Ph", coords: "1041,1953,1641,2081" },
+                    { alt: "Box 33a - NPI", coords: "1040,2084,1267,2124" },
+                    { alt: "Box 33b - Other ID", coords: "1270,2086,1642,2120" }
+                ]
+            },
+            ub: {
+                title: "UB Field Locator & Navigation Suite",
+                imageSrc: "UB Form.jpg",
+                nativeWidth: 3214,  
+                nativeHeight: 4160,
+                borderWidth: "3px",
+                maxFields: 118,
+                areas: [
+                    { alt: "1. Billing Organ Name and Address", coords: "56,69,997,257" },
+                    { alt: "1.  Billing Provider Phone Number", coords: "56,258,1000,319" },
+                    { alt: "2. Pay-To- Provider Name and Address", coords: "998,70,1945,257" },
+                    { alt: "2. Pay-To- Provider Phone Number", coords: "1002,257,1945,318" },
+                    { alt: "3A. Patient Control Number", coords: "2061,70,2967,127" },
+                    { alt: "3B. Medical Record Number", coords: "2061,131,2966,193" },
+                    { alt: "4. Type of Bill", coords: "2966,130,3161,193" },
+                    { alt: "5. FED Tax ID (Federal Tax ID)", coords: "1949,193,2326,318" },
+                    { alt: "6. Statement Covers Period From Date", coords: "2328,258,2590,321" },
+                    { alt: "6. Statement Covers Period To Date", coords: "2593,257,2857,318" },
+                    { alt: "8B. Patient Name", coords: "96,383,1189,445" },
+                    { alt: "8A. Patient ID", coords: "474,321,1190,381" },
+                    { alt: "9A. Patient Address", coords: "1608,322,3159,382" },
+                    { alt: "9B. Patient City", coords: "1229,385,2437,442" },
+                    { alt: "9C. Patient State Code", coords: "2479,385,2589,443" },
+                    { alt: "9D. Patient Zip Code", coords: "2629,383,3004,442" },
+                    { alt: "9E. County Code", coords: "3047,385,3163,446" },
+                    { alt: "10. Patient DOB", coords: "57,509,393,570" },
+                    { alt: "11. Gender", coords: "396,510,509,567" },
+                    { alt: "12.  Admission Date", coords: "510,509,734,569" },
+                    { alt: "13. Admission Hours", coords: "738,509,849,570" },
+                    { alt: "14. Admission Type", coords: "852,510,960,569" },
+                    { alt: "15. SRC (Source of Admission)", coords: "962,510,1076,570" },
+                    { alt: "16. DHR (Discharge hours)", coords: "1078,507,1189,569" },
+                    { alt: "17. Patient discharge status", coords: "1190,507,1302,567" },
+                    { alt: "18 to 28. Condition Codes", coords: "1305,507,2550,571" },
+                    { alt: "29. ACDT State (Accident State)", coords: "2551,507,2674,570" },
+                    { alt: "31. Occurrence Code", coords: "57,633,169,758" },
+                    { alt: "31. Occurrence Date", coords: "170,635,433,758" },
+                    { alt: "32. Occurrence Code", coords: "436,634,545,757" },
+                    { alt: "32. Occurrence Date", coords: "549,637,810,757" },
+                    { alt: "33. Occurrence Code", coords: "814,637,926,757" },
+                    { alt: "33. Occurrence Date", coords: "928,634,1189,757" },
+                    { alt: "34. Occurrence Code", coords: "1193,635,1302,758" },
+                    { alt: "34. Occurrence Date", coords: "1306,637,1568,762" },
+                    { alt: "35. Occurrence Span Code", coords: "1569,637,1682,758" },
+                    { alt: "35. Occurrence Span From", coords: "1684,635,1949,761" },
+                    { alt: "35. Occurrence Span Through", coords: "1948,634,2212,758" },
+                    { alt: "36. Occurrence Span Code", coords: "2210,635,2325,759" },
+                    { alt: "36. Occurrence Span From", coords: "2326,634,2590,757" },
+                    { alt: "36. Occurrence Span Through", coords: "2593,635,2854,759" },
+                    { alt: "38. Responsible party Name and Address", coords: "57,761,1645,1074" },
+                    { alt: "39. Value Codes", coords: "1684,825,1796,1074" },
+                    { alt: "39. Value Codes Amount", coords: "1797,825,2175,1074" },
+                    { alt: "40. Value Codes", coords: "2176,825,2288,1074" },
+                    { alt: "40. Value Codes Amount", coords: "2288,825,2665,1076" },
+                    { alt: "41. Value Codes", coords: "2669,822,2779,1072" },
+                    { alt: "41. Value Codes Amount", coords: "2782,825,3161,1076" },
+                    { alt: "42. Line Level Revenue Code (1 to 22)", coords: "54,1140,231,2526" },
+                    { alt: "42. Claim Level Revenue Code (23)", coords: "55,2528,231,2588" },
+                    { alt: "43. Revenue Code Description/ NDC Code", coords: "232,1142,1176,2526" },
+                    { alt: "44. HCPCS/Rate/HIPPS Code", coords: "1176,1140,1742,2524" },
+                    { alt: "45. Service Date", coords: "1742,1140,2008,2522" },
+                    { alt: "46. Service Unit", coords: "2008,1140,2310,2524" },
+                    { alt: "47. Line Level Charges (1 to 22)", coords: "2310,1142,2688,2526" },
+                    { alt: "47. Total charges (23)", coords: "2314,2530,2688,2586" },
+                    { alt: "48. Non-Covered Charges", coords: "2688,1140,3062,2526" },
+                    { alt: "50. Payer name", coords: "56,2652,924,2840" },
+                    { alt: "51. Health Plan Id", coords: "926,2654,1492,2838" },
+                    { alt: "52. Release of Info Certification (REL.INFO)", coords: "1492,2654,1568,2840" },
+                    { alt: "53. Assignment of Benefit Certification (ASG BEL)", coords: "1606,2652,1682,2840" },
+                    { alt: "54. Prior Payments", coords: "1682,2650,2058,2838" },
+                    { alt: "55. EST Amount Due", coords: "2062,2652,2476,2840" },
+                    { alt: "56. NPI", coords: "2590,2590,3160,2652" },
+                    { alt: "57. Other Prv ID (Other Provider ID)", coords: "2589,2653,3159,2841" },
+                    { alt: "58. Insured's Name", coords: "55,2904,1036,3092" },
+                    { alt: "59. Patient's Relation to the Insured (P.REL)", coords: "1037,2903,1150,3092" },
+                    { alt: "60. Insured's Unique Id", coords: "1153,2903,1908,3092" },
+                    { alt: "61. Group Name", coords: "1909,2903,2475,3091" },
+                    { alt: "62. Insurance Group ID", coords: "2476,2903,3160,3091" },
+                    { alt: "63. Treatment Authorization Codes", coords: "55,3157,1226,3344" },
+                    { alt: "64. Document control Number", coords: "1226,3153,2211,3343" },
+                    { alt: "65. Employer Name", coords: "2211,3155,3160,3344" },
+                    { alt: "66. DX (ICD Indicator)", coords: "55,3408,95,3469" },
+                    { alt: "67. Principal Diagnosis Code", coords: "96,3347,398,3407" },
+                    { alt: "67A-H. Other Diagnosis code and POA Indicator", coords: "396,3346,2822,3408" },
+                    { alt: "67I-Q. Other Diagnosis code and POA Indicator", coords: "96,3408,2816,3470" },
+                    { alt: "69. Admitting Diagnosis Code", coords: "204,3472,476,3536" },
+                    { alt: "70. Patient Reason DX and POA Indicator (A to C)", coords: "664,3473,1460,3538" },
+                    { alt: "71. PPS Code", coords: "1611,3474,1800,3536" },
+                    { alt: "72. ECI and POA Indicator (A to C)", coords: "1875,3473,2785,3539" },
+                    { alt: "74. Principal Procedure Code", coords: "56,3600,361,3659" },
+                    { alt: "74. Principal Procedure Date", coords: "362,3595,627,3659" },
+                    { alt: "74A. Other Procedure Code", coords: "627,3599,928,3659" },
+                    { alt: "74A. Other Procedure Date", coords: "931,3597,1193,3659" },
+                    { alt: "74B. Other Procedure Code", coords: "1194,3599,1496,3657" },
+                    { alt: "74B. Other Procedure Date", coords: "1499,3599,1759,3659" },
+                    { alt: "74C. Other Procedure Code", coords: "56,3726,360,3783" },
+                    { alt: "74C. Other Procedure Date", coords: "364,3725,626,3781" },
+                    { alt: "74D. Other Procedure Code", coords: "625,3724,929,3782" },
+                    { alt: "74D. Other Procedure Date", coords: "930,3724,1193,3782" },
+                    { alt: "74E. Other Procedure Code", coords: "1193,3724,1496,3783" },
+                    { alt: "74E. Other Procedure Date", coords: "1494,3723,1758,3783" },
+                    { alt: "76. Attending NPI", coords: "2214,3537,2662,3597" },
+                    { alt: "76. Attending Qualifier", coords: "2742,3536,2819,3596" },
+                    { alt: "76. Attending ID", coords: "2819,3538,3160,3598" },
+                    { alt: "76. Attending Last Name", coords: "1959,3595,2628,3660" },
+                    { alt: "76. Attending First Name", coords: "2630,3596,3159,3661" },
+                    { alt: "77.Operating NPI", coords: "2216,3661,2663,3723" },
+                    { alt: "77.Operating Qualifier", coords: "2742,3659,2820,3724" },
+                    { alt: "77.Operating Last Name", coords: "1957,3724,2629,3783" },
+                    { alt: "77. Operating First Name", coords: "2629,3723,3158,3785" },
+                    { alt: "77. Operating ID", coords: "2817,3659,3158,3720" },
+                    { alt: "78.Other NPI", coords: "2214,3788,2663,3851" },
+                    { alt: "78.Other Qualifier", coords: "2741,3788,2820,3852" },
+                    { alt: "78.Other ID", coords: "2820,3787,3159,3850" },
+                    { alt: "78.Other Last Name", coords: "1956,3848,2629,3912" },
+                    { alt: "78. Other First Name", coords: "2629,3850,3159,3912" },
+                    { alt: "79.Other NPI", coords: "2217,3912,2662,3975" },
+                    { alt: "79.Other Qualifier", coords: "2738,3914,2817,3976" },
+                    { alt: "79. Other ID", coords: "2818,3912,3159,3974" },
+                    { alt: "79. Other Last Name", coords: "1958,3973,2629,4037" },
+                    { alt: "79. Other First Name", coords: "2626,3973,3160,4035" },
+                    { alt: "80. Remarks", coords: "54,3784,967,4036" },
+                    { alt: "81A. Qualifier", coords: "1044,3785,1116,3848" },
+                    { alt: "81A. Taxonomy Code 1", coords: "1114,3786,1497,3849" },
+                    { alt: "81A. Taxonomy Code 2", coords: "1496,3784,1948,3848" },
+                    { alt: "81B. Qualifier", coords: "1042,3847,1114,3911" },
+                    { alt: "81B. Taxonomy Code 1", coords: "1116,3847,1496,3911" },
+                    { alt: "82B. Taxonomy Code 2", coords: "1497,3851,1950,3912" },
+                    { alt: "81C. Qualifier", coords: "1042,3913,1113,3976" },
+                    { alt: "81C. Taxonomy Code 1", coords: "1116,3909,1495,3975" },
+                    { alt: "81C. Taxonomy Code 2", coords: "1496,3912,1947,3974" },
+                    { alt: "81D. Qualifier", coords: "1045,3976,1113,4037" },
+                    { alt: "81D. Taxonomy Code 1", coords: "1114,3976,1495,4037" },
+                    { alt: "81D. Taxonomy Code 2", coords: "1495,3976,1950,4035" }
+                ]
+            }
+        };
+
+        // --- Core Context Tracking States ---
+        let activeMode = 'hcfa'; 
+        let boxNames = [];
+        let maxAttempts = 10;
+        let timePerQuestion = 15;
+        let quizPool = [];
+        let currentBoxName = '';
+        let score = 0;
+        let attempts = 0;
+        let currentStreak = 0;
+        let startTime = 0;
+        let questionTimerInterval = null;
+        let timeRemaining = 0;
+
+        const wrongClicks = [];
+        const correctClicks = [];
+        let redBox = null;
+
+        // UI Element References
+        const formImage = document.getElementById('form-image');
+        const dynamicImageMap = document.getElementById('dynamic-image-map');
+        const suiteTitle = document.getElementById('suite-title');
+        
+        const setupScreen = document.getElementById('setup-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const boxList = document.getElementById('box-list');
+        
+        const scoreElement = document.getElementById('score');
+        const attemptsElement = document.getElementById('attempts');
+        const streakElement = document.getElementById('streak');
+        const timeText = document.getElementById('time-text');
+        const timerBar = document.getElementById('timer-bar');
+        const resultsContent = document.getElementById('results-content');
+        const inputQuestions = document.getElementById('input-questions');
+
+        // --- Sound Module Context ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                    osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.08); 
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+                } else {
+                    osc.frequency.setValueAtTime(220.00, audioCtx.currentTime); 
+                    osc.frequency.linearRampToValueAtTime(130.81, audioCtx.currentTime + 0.18); 
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.22);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.22);
+                }
+            } catch(e) {}
+        }
+
+        // --- DYNAMIC IMAGE MAP RESPONSIVE ENGINE ---
+        function resizeImageMapCoords() {
+            const profile = mapDataProfiles[activeMode];
+            const renderedWidth = formImage.clientWidth;
+            if (!renderedWidth) return; 
+
+            const scaleFactor = renderedWidth / profile.nativeWidth;
+            const areas = dynamicImageMap.getElementsByTagName('area');
+
+            profile.areas.forEach((profileArea, index) => {
+                if (areas[index]) {
+                    const originalCoords = profileArea.coords.split(',').map(Number);
+                    const resizedCoords = originalCoords.map(coord => Math.round(coord * scaleFactor));
+                    areas[index].coords = resizedCoords.join(',');
+                }
+            });
+        }
+
+        function applyAppMode(modeKey) {
+            activeMode = modeKey;
+            const profile = mapDataProfiles[modeKey];
+
+            suiteTitle.textContent = profile.title;
+            formImage.src = profile.imageSrc;
+
+            inputQuestions.max = profile.maxFields;
+            if (parseInt(inputQuestions.value) > profile.maxFields) {
+                inputQuestions.value = profile.maxFields;
+            }
+
+            dynamicImageMap.innerHTML = '';
+            boxNames = [];
+
+            profile.areas.forEach(area => {
+                const cleanedBoxName = area.alt.replace(/&amp;/g, '&');
+                boxNames.push(cleanedBoxName);
+
+                const areaEl = document.createElement('area');
+                areaEl.shape = 'rect';
+                areaEl.alt = cleanedBoxName;
+                areaEl.title = cleanedBoxName;
+                areaEl.href = '#';
+                areaEl.setAttribute('data-box', cleanedBoxName);
+
+                areaEl.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if (gameScreen.classList.contains('active')) {
+                        checkBoxSelection(this.getAttribute('data-box'), e);
+                    }
+                });
+                areaEl.addEventListener('mouseover', function () {
+                    if (gameScreen.classList.contains('active')) {
+                        createRedBoxFromResized(this.coords);
+                    }
+                });
+                areaEl.addEventListener('mouseout', removeRedBox);
+
+                dynamicImageMap.appendChild(areaEl);
+            });
+
+            if (formImage.complete) {
+                resizeImageMapCoords();
+            } else {
+                formImage.onload = function() {
+                    resizeImageMapCoords();
+                    formImage.onload = null;
+                };
+            }
+
+            resetSimulationState();
+        }
+
+        function resetSimulationState() {
+            clearInterval(questionTimerInterval);
+            setupScreen.classList.add('active');
+            gameScreen.classList.remove('active');
+            resultsScreen.classList.remove('active');
+            score = 0; attempts = 0; currentStreak = 0;
+            wrongClicks.length = 0; correctClicks.length = 0;
+            removeRedBox();
+        }
+
+        // --- Interaction Feedback Engine ---
+        function spawnFeedback(e, isCorrect) {
+            const feedback = document.createElement('div');
+            feedback.innerText = isCorrect ? '👍' : '👎';
+            feedback.style.position = 'absolute';
+            feedback.style.left = `${e.pageX - 15}px`;
+            feedback.style.top = `${e.pageY - 15}px`;
+            feedback.style.fontSize = '45px'; 
+            feedback.style.pointerEvents = 'none';
+            feedback.style.zIndex = '2000';
+            feedback.style.transition = 'all 0.6s ease-out';
+            
+            if (isCorrect) {
+                feedback.style.filter = 'hue-rotate(90deg) brightness(0.6) drop-shadow(0px 0px 8px #1b5e20)';
+            } else {
+                feedback.style.filter = 'hue-rotate(300deg) brightness(0.6) drop-shadow(0px 0px 8px #b71c1c)';
+            }
+            
+            document.body.appendChild(feedback);
+
+            requestAnimationFrame(() => {
+                feedback.style.transform = 'translateY(-50px) scale(1.3)';
+                feedback.style.opacity = '0';
+            });
+            setTimeout(() => feedback.remove(), 600);
+        }
+
+        function createRedBoxFromResized(resizedCoordsStr) {
+            removeRedBox(); 
+            const coords = resizedCoordsStr.split(',').map(Number);
+            
+            redBox = document.createElement('div');
+            redBox.style.position = 'absolute';
+            
+            const thickness = mapDataProfiles[activeMode].borderWidth;
+            redBox.style.border = `${thickness} dashed #e74c3c`;
+            redBox.style.backgroundColor = 'rgba(231, 76, 60, 0.18)';
+            redBox.style.pointerEvents = 'none';
+            
+            redBox.style.left = `${coords[0] + 15}px`;   
+            redBox.style.top = `${coords[1] + 15}px`;     
+            redBox.style.width = `${coords[2] - coords[0]}px`;
+            redBox.style.height = `${coords[3] - coords[1]}px`;
+            
+            document.querySelector('.form-container').appendChild(redBox);
+        }
+
+        function removeRedBox() {
+            if (redBox) {
+                redBox.remove();
+                redBox = null;
+            }
+        }
+
+        function highlightCorrectBox(fieldName) {
+            const areaTarget = Array.from(dynamicImageMap.getElementsByTagName('area')).find(area => 
+                area.getAttribute('data-box') === fieldName
+            );
+            
+            if (areaTarget) {
+                createRedBoxFromResized(areaTarget.coords);
+                const [, top] = areaTarget.coords.split(',').map(Number);
+
+                document.querySelector('.form-container').scrollTo({
+                    top: top - 50,
+                    behavior: 'smooth'
+                });
+
+                let flashCycle = 0;
+                const flashTimer = setInterval(() => {
+                    if (redBox) redBox.style.opacity = (redBox.style.opacity === '0' ? '1' : '0');
+                    if (++flashCycle > 10) {
+                        clearInterval(flashTimer);
+                        if (redBox) redBox.style.opacity = '1';
+                    }
+                }, 150);
+            }
+        }
+
+        // --- Game Setup Controls Engine ---
+        document.getElementById('start-game-btn').addEventListener('click', function() {
+            const qInput = parseInt(inputQuestions.value);
+            const tInput = parseInt(document.getElementById('input-timer').value);
+
+            maxAttempts = isNaN(qInput) ? 10 : Math.min(Math.max(qInput, 1), boxNames.length);
+            timePerQuestion = isNaN(tInput) ? 15 : Math.min(Math.max(tInput, 3), 60);
+
+            quizPool = [...boxNames].sort(() => Math.random() - 0.5).slice(0, maxAttempts);
+            
+            setupScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            
+            startTime = Date.now();
+            showNextQuestion();
+        });
+
+        function showNextQuestion() {
+            clearInterval(questionTimerInterval);
+            if (attempts >= maxAttempts) {
+                displayResults();
+                return;
+            }
+
+            currentBoxName = quizPool[attempts];
+            boxList.innerHTML = `<li class="fade-in">${currentBoxName}</li>`;
+            
+            attemptsElement.textContent = maxAttempts - attempts;
+            scoreElement.textContent = score;
+            streakElement.textContent = currentStreak;
+
+            initQuestionTimer();
+        }
+
+        function initQuestionTimer() {
+            timeRemaining = timePerQuestion;
+            timeText.textContent = `${timeRemaining}s`;
+            timerBar.style.width = '100%';
+            timerBar.style.backgroundColor = '#2ecc71';
+
+            questionTimerInterval = setInterval(() => {
+                timeRemaining--;
+                timeText.textContent = `${timeRemaining}s`;
+                
+                let percentage = (timeRemaining / timePerQuestion) * 100;
+                timerBar.style.width = `${percentage}%`;
+
+                if (percentage < 30) {
+                    timerBar.style.backgroundColor = '#e74c3c'; 
+                } else if (percentage < 60) {
+                    timerBar.style.backgroundColor = '#f1c40f'; 
+                }
+
+                if (timeRemaining <= 0) {
+                    clearInterval(questionTimerInterval);
+                    handleFailure(null, true); 
+                }
+            }, 1000);
+        }
+
+        function checkBoxSelection(name, clickEvent) {
+            clearInterval(questionTimerInterval);
+            const isCorrect = (name === currentBoxName);
+            
+            if (isCorrect) {
+                playSound('correct');
+                if(clickEvent) spawnFeedback(clickEvent, true);
+                score++;
+                currentStreak++;
+                correctClicks.push({ name: currentBoxName });
+            } else {
+                handleFailure(clickEvent, false);
+                return;
+            }
+
+            attempts++;
+            showNextQuestion();
+        }
+
+        function handleFailure(clickEvent, isTimeout) {
+            playSound('wrong');
+            if (clickEvent && !isTimeout) spawnFeedback(clickEvent, false);
+            
+            currentStreak = 0;
+            wrongClicks.push({ 
+                correct: currentBoxName, 
+                reason: isTimeout ? 'Timed out' : 'Incorrect Selection' 
+            });
+
+            attempts++;
+            showNextQuestion();
+        }
+
+        function displayResults() {
+            clearInterval(questionTimerInterval);
+            gameScreen.classList.remove('active');
+            resultsScreen.classList.add('active');
+
+            const elapsedTotal = ((Date.now() - startTime) / 1000).toFixed(1);
+            const finalPercentage = ((score / maxAttempts) * 100).toFixed(1);
+
+            let wrongSummaryHtml = "<h3 style='color:#e74c3c; margin-top:25px;'>❌ Areas For Review:</h3><ul class='bordered-list'>";
+            wrongClicks.forEach((item, index) => {
+                wrongSummaryHtml += `
+                    <li id="review-item-${index}" style="cursor:pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#fdf2f2'" onmouseout="this.style.backgroundColor='#fff'">
+                        🔍 <b>${item.correct}</b> <span style="color:#7f8c8d; font-size:14px;">(${item.reason} - Click to check location)</span>
+                    </li>`;
+            });
+            wrongSummaryHtml += "</ul>";
+
+            let correctSummaryHtml = "<h3 style='color:#2ecc71; margin-top:25px;'>✅ Mastered Fields:</h3><ul class='bordered-list'>";
+            correctClicks.forEach((item) => {
+                correctSummaryHtml += `<li>Item Located: <b>${item.name}</b></li>`;
+            });
+            correctSummaryHtml += "</ul>";
+
+            resultsContent.innerHTML = `
+                <div class="card" style="text-align:center;">
+                    <p style="font-size: 24px; margin:0 0 15px 0;">🎉 Evaluation Complete!</p>
+                    <p style="font-size: 38px; font-weight:bold; color:#2980b9; margin:15px 0;">${finalPercentage}%</p>
+                    <p style="font-size: 16px;">Accurately checked <b>${score}</b> out of <b>${maxAttempts}</b> total target items.</p>
+                    <p style="color:#7f8c8d; font-size: 14px;">Total operational time: ${elapsedTotal} seconds.</p>
+                    <button id="reload-app-btn" class="btn btn-retry" style="margin-top:15px;">Configure New Session</button>
+                </div>
+                ${wrongClicks.length > 0 ? wrongSummaryHtml : "<p style='color:#2ecc71; font-weight:bold; font-size:20px; text-align:center;'>🎯 Perfect Score! Your accuracy profile is exemplary.</p>"}
+                ${correctClicks.length > 0 ? correctSummaryHtml : ""}
+            `;
+
+            document.getElementById('reload-app-btn').addEventListener('click', () => {
+                applyAppMode(activeMode);
+            });
+
+            wrongClicks.forEach((item, index) => {
+                document.getElementById(`review-item-${index}`).addEventListener('click', function() {
+                    highlightCorrectBox(item.correct);
+                });
+            });
+        }
+
+        // --- App Switcher Event Handlers ---
+        const hcfaModeBtn = document.getElementById('mode-hcfa-btn');
+        const ubModeBtn = document.getElementById('mode-ub-btn');
+
+        hcfaModeBtn.addEventListener('click', () => {
+            if (activeMode !== 'hcfa') {
+                hcfaModeBtn.classList.add('active-mode');
+                ubModeBtn.classList.remove('active-mode');
+                applyAppMode('hcfa');
+            }
+        });
+
+        ubModeBtn.addEventListener('click', () => {
+            if (activeMode !== 'ub') {
+                ubModeBtn.classList.add('active-mode');
+                hcfaModeBtn.classList.remove('active-mode');
+                applyAppMode('ub');
+            }
+        });
+
+        // Initialize Defaults
+        applyAppMode('hcfa');
+        
+        window.addEventListener('resize', () => {
+            removeRedBox();
+            resizeImageMapCoords();
+        });
+    });
+    </script>
+</body>
+</html>
